@@ -1,27 +1,35 @@
 import React from 'react';
 import BlogPostList from "./BlogPostList";
-import {blogPostList, blogPostAdd} from "../actions/actions"
+import {blogPostListFetch} from "../actions/actions"
 import {connect} from "react-redux"
+import {Spinner} from "./Spinner";
 
 const mapStateToProps = state => ({
     ...state.blogPostList
 });
 
-const mapDispatchToPost = {
-    blogPostList,
-    blogPostAdd
+const mapDispatchToProps = {
+    blogPostListFetch
+
 };
 
 class BlogPostListContainer extends React.Component{
     componentDidMount(){
-        console.log(this.props);
-        this.props.blogPostList();
+        setTimeout(this.props.blogPostAdd, 3000);
+        setTimeout(this.props.blogPostAdd, 5000);
+        setTimeout(this.props.blogPostAdd, 7000);
+        this.props.blogPostListFetch();
     }
 
     render(){
-        console.log(this.props.posts)
-        return(<BlogPostList posts={this.props.posts}/>)
+        const {posts, isFetching} = this.props;
+
+        if(isFetching){
+            return (<Spinner/>)
+        }
+
+        return(<BlogPostList posts={posts}/>)
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToPost)(BlogPostListContainer)
+export default connect(mapStateToProps, mapDispatchToProps)(BlogPostListContainer)
