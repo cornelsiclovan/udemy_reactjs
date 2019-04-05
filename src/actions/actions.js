@@ -68,6 +68,29 @@ export const blogPostFetch = (id) => {
     }
 };
 
+export const blogPostAdd = (title, content) => {
+    return (dispatch) => {
+        return requests.post(
+            '/blog_posts',
+            {
+                title,
+                content,
+                slug: title && title.replace(/ /g, "-").toLowerCase()
+            }
+        ).catch((error) => {
+                if(401 === error.response.status){
+                    return dispatch(userLogout());
+                }else if(403 === error.response.status){
+                    throw new SubmissionError({
+                        _error: "You do not have rights to publish blog posts!"
+                    })
+                }
+                throw new SubmissionError(parseApiErrors(error))
+            }
+        );
+    }
+};
+
 export const commentListRequest = () => ({
     type: COMMENT_LIST_REQUEST,
 });
@@ -228,12 +251,3 @@ export const userProfileFetch = (userId) => {
         ).catch(error => dispatch(userProfileError(userId)));
     };
 }
-
-
-export const blogPostAdd = () => ({
-    type: BLOG_POST_LIST_ADD,
-    data:{
-        id: Math.floor(Math.random() * 100 + 3),
-        title: 'A newly added blog post'
-    }
-});
