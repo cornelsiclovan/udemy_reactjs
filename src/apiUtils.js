@@ -1,5 +1,5 @@
 export const parseApiErrors = (error) => {
-    return error.response.body.violations.reduce(
+    return error.response.body.violatios.reduce(
         (parsedErrors, violation) => {
             parsedErrors[violation['propertyPath']] = violation['message'];
             return parsedErrors;

@@ -6,7 +6,7 @@ import {commentAdd} from "../actions/actions";
 
 const mapDispatchToProps = {
     commentAdd
-}
+};
 
 class CommentForm extends  React.Component {
     onSubmit(values){

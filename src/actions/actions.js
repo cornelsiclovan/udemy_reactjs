@@ -1,16 +1,33 @@
 import {requests} from "../agent";
 import {
-    BLOG_POST_ERROR,
-    BLOG_POST_LIST_ADD, BLOG_POST_LIST_ERROR, BLOG_POST_LIST_RECEIVED, BLOG_POST_LIST_REQUEST, BLOG_POST_LIST_SET_PAGE,
+    BLOG_POST_ERROR, BLOG_POST_FORM_UNLOAD,
+    BLOG_POST_LIST_ERROR,
+    BLOG_POST_LIST_RECEIVED,
+    BLOG_POST_LIST_REQUEST,
+    BLOG_POST_LIST_SET_PAGE,
     BLOG_POST_RECEIVED,
-    BLOG_POST_REQUEST, BLOG_POST_UNLOAD, COMMENT_ADDED, COMMENT_LIST_ERROR, COMMENT_LIST_RECEIVED, COMMENT_LIST_REQUEST,
-    COMMENT_LIST_UNLOAD, USER_CONFIRMATION_SUCCESS, USER_LOGIN_SUCCESS, USER_LOGOUT, USER_PROFILE_ERROR,
+    BLOG_POST_REQUEST,
+    BLOG_POST_UNLOAD,
+    COMMENT_ADDED,
+    COMMENT_LIST_ERROR,
+    COMMENT_LIST_RECEIVED,
+    COMMENT_LIST_REQUEST,
+    COMMENT_LIST_UNLOAD,
+    IMAGE_UPLOAD_ERROR,
+    IMAGE_UPLOAD_REQUEST,
+    IMAGE_UPLOADED,
+    USER_CONFIRMATION_SUCCESS,
+    USER_LOGIN_SUCCESS,
+    USER_LOGOUT, USER_PROFILE_ERROR,
     USER_PROFILE_RECEIVED,
-    USER_PROFILE_REQUEST, USER_REGISTER_COMPLETE, USER_REGISTER_SUCCESS,
+    USER_PROFILE_REQUEST,
+    USER_REGISTER_COMPLETE,
+    USER_REGISTER_SUCCESS,
     USER_SET_ID
 } from "./constants";
 import {SubmissionError} from "redux-form"
 import {parseApiErrors} from "../apiUtils";
+
 
 export const blogPostListRequest = () => ({
     type: BLOG_POST_LIST_REQUEST,
@@ -68,16 +85,17 @@ export const blogPostFetch = (id) => {
     }
 };
 
-export const blogPostAdd = (title, content) => {
+export const blogPostAdd = (title, content, images = []) => {
     return (dispatch) => {
         return requests.post(
             '/blog_posts',
             {
                 title,
                 content,
-                slug: title && title.replace(/ /g, "-").toLowerCase()
-            }
-        ).catch((error) => {
+                slug: title && title.replace(/ /g, "-").toLowerCase(),
+                images: images.map(image => `/api/images/${image.id}`)
+            })
+            .catch((error) => {
                 if(401 === error.response.status){
                     return dispatch(userLogout());
                 }else if(403 === error.response.status){
@@ -90,6 +108,10 @@ export const blogPostAdd = (title, content) => {
         );
     }
 };
+
+export const blogPostFormUnload = () => ({
+    type: BLOG_POST_FORM_UNLOAD
+});
 
 export const commentListRequest = () => ({
     type: COMMENT_LIST_REQUEST,
@@ -121,7 +143,7 @@ export const commentListFetch = (id, page = 1) => {
 
 export const commentAdded = (comment) => ({
     type: COMMENT_ADDED,
-    comment
+    comment,
 });
 
 export const commentAdd = (comment, blogPostId) => {
@@ -133,7 +155,7 @@ export const commentAdd = (comment, blogPostId) => {
                  blogPost: `/api/blog_posts/${blogPostId}`
              }
          ).then(
-             response => dispatch(commentAdded(response))
+             response => dispatch(commentAdded(response)),
          ).catch((error) => {
                 if(401 === error.response.status){
                     return dispatch(userLogout());
@@ -250,4 +272,34 @@ export const userProfileFetch = (userId) => {
             response => dispatch(userProfileReceived(userId, response))
         ).catch(error => dispatch(userProfileError(userId)));
     };
+};
+
+export const imageUploaded = (data) => {
+    return {
+        type: IMAGE_UPLOADED,
+        image: data
+    }
+};
+
+export const imageUploadRequest = () => {
+    return {
+        type: IMAGE_UPLOAD_REQUEST,
+    }
 }
+
+export const imageUploadError = () => {
+    return {
+        type: IMAGE_UPLOAD_ERROR,
+    }
+}
+
+export const imageUpload = (file) => {
+    return (dispatch) => {
+        dispatch(imageUploadRequest());
+        return requests.upload('/images', file)
+            .then(response => dispatch(imageUploaded(response)))
+            .catch(() => dispatch(imageUploadError()))
+    }
+}
+
+
